@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<script>
+  /* ▼ 직접 바꿀 곳 ─────────────────────────────── */
+  const FORM_URL   = "#";          // 소식 받기 신청 양식 주소 (구글 폼, 네이버 폼 등)
+  const USE_PHOTOS = false;        // 실제 코디 사진을 넣으면 true 로 바꾸기
+  const PHOTO_DIR  = "images/";    // 사진 폴더. 파일 이름 예: summer-business-1.jpg (계절-복장규정-단계)
+  /* ─────────────────────────────────────────────── */
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>출근컬러 | 퍼스널컬러 맞춤 출근 코디 룩북</title>
+<meta name="description" content="진단받은 내 퍼스널컬러와 회사 복장 규정을 고르면, 컬러를 쓰는 양에 따라 5단계 출근 코디 룩북을 보여 드려요.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="진단받은 내 컬러, 이제 출근복으로 입어 보세요">
+<meta property="og:description" content="복장 규정 안에서 내 컬러를 얼마나, 어디에 쓸지 정해 주는 출근 코디 룩북.">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root{
+    --bg:#FFFFFF; --bg-soft:#F4F4F2; --bg-img:#EFEEEA; --line:#E2E2DF;
+    --text:#2B2B2E; --text-sub:#5E5E63;
+    --accent:#3D4866; --accent-hover:#2E3750;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:"Pretendard Variable",Pretendard,"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    font-size:16px;line-height:1.65;color:var(--text);background:var(--bg);
+    word-break:keep-all;overflow-wrap:break-word;-webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;flex-direction:column;
+  }
+  main{flex:1}
+  a{color:inherit}
+  button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+  [hidden]{display:none!important}
+  :focus-visible{outline:3px solid #B7A8D6;outline-offset:3px}
+  h1:focus,h2:focus{outline:none}
+  .wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 20px}
+  .eyebrow{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-sub);font-weight:600}
+  .step-title{font-size:clamp(24px,6vw,36px);line-height:1.35;font-weight:700;letter-spacing:-.02em;margin:8px 0 8px}
+  .step-sub{color:var(--text-sub);margin-bottom:28px}
+
+  /* 버튼 */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;padding:0 28px;border-radius:999px;background:var(--accent);color:#fff;font-size:17px;font-weight:600;text-decoration:none;transition:background .2s}
+  .btn:hover{background:var(--accent-hover)}
+  .btn svg{width:18px;height:18px}
+  .btn-line{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:0 20px;border-radius:999px;border:1px solid var(--line);background:var(--bg);font-size:15px;font-weight:600;text-decoration:none}
+  .btn-line:hover{border-color:#B9B9B5}
+  .back{display:inline-flex;align-items:center;gap:4px;min-height:44px;font-size:15px;color:var(--text-sub);margin-bottom:8px}
+  .back:hover{color:var(--text)}
+
+  /* 헤더 + 진행 단계 */
+  .site-header{border-bottom:1px solid var(--line);background:var(--bg)}
+  .topbar{display:flex;align-items:center;height:56px}
+  .brand{font-weight:700;font-size:17px;text-decoration:none}
+  .stepper{border-bottom:1px solid var(--line);background:var(--bg)}
+  .stepper ol{list-style:none;display:grid;grid-template-columns:repeat(5,1fr);gap:4px;padding:12px 0}
+  .stepper li{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:12px;color:#8A8A8F;text-align:center;line-height:1.3}
+  .stepper .n{width:26px;height:26px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;background:var(--bg)}
+  .stepper li.done{color:var(--text-sub)}
+  .stepper li.done .n{background:var(--bg-soft);border-color:var(--bg-soft);color:var(--text)}
+  .stepper li[aria-current="step"]{color:var(--text);font-weight:700}
+  .stepper li[aria-current="step"] .n{background:var(--text);border-color:var(--text);color:#fff}
+  @media (min-width:768px){.stepper li{flex-direction:row;justify-content:center;font-size:14px;gap:8px}}
+
+  .step{padding:32px 0 64px}
+
+  /* ① 첫 화면 */
+  .hero{padding:44px 0 56px}
+  .hero-grid{display:grid;gap:36px;align-items:center}
+  .hero h1{font-size:clamp(28px,7.6vw,52px);line-height:1.3;font-weight:700;letter-spacing:-.03em;margin:12px 0 16px}
+  .hero .sub{font-size:clamp(16px,4.2vw,19px);color:var(--text-sub);max-width:34em;margin-bottom:28px}
+  .hero .note{font-size:14px;color:var(--text-sub);margin-top:14px}
+  .hero-looks{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .hero-looks figure{background:var(--bg-img);border-radius:6px;padding:8px 4px 4px}
+  .hero-looks figcaption{font-size:12px;color:var(--text-sub);text-align:center;padding:4px 0 2px;line-height:1.35}
+  .hero-looks svg{display:block;width:100%;height:auto}
+  @media (min-width:900px){
+    .hero{padding:88px 0 96px}
+    .hero-grid{grid-template-columns:1.15fr 1fr}
+    .hero-looks{gap:12px}
+    .hero-looks figure:nth-child(2){transform:translateY(28px)}
+  }
+
+  /* ② ③ 선택 카드 */
+  .choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .choice-grid.codes{grid-template-columns:1fr}
+  .choice{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:6px;min-height:120px;padding:18px 16px;border:1px solid var(--line);border-radius:8px;background:var(--bg);transition:border-color .15s,box-shadow .15s}
+  .choice:hover{border-color:#B9B9B5}
+  .choice[aria-pressed="true"]{border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+  .choice .name{font-size:18px;font-weight:700}
+  .choice .trait{font-size:14px;color:var(--text-sub);line-height:1.45}
+  .choice .sw{display:flex;gap:3px;margin-top:auto;padding-top:8px}
+  .choice .sw i{width:16px;height:22px;border-radius:2px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+  .codes .choice{min-height:0;flex-direction:row;align-items:center;gap:14px;padding:16px}
+  .codes .choice .txt{flex:1;display:flex;flex-direction:column;gap:2px}
+  .codes .choice .arrow{color:var(--text-sub);font-size:20px}
+  .code-icon{flex:none;width:56px;height:84px;align-items:center!important;background:var(--bg-img);border-radius:6px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden}
+  .code-icon svg{height:76px;width:auto;margin:auto}
+  .picked{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:14px;padding:8px 14px;border-radius:999px;background:var(--bg-soft);margin-bottom:20px}
+  .picked button{text-decoration:underline;color:var(--text-sub);font-size:14px;min-height:28px}
+  @media (min-width:768px){
+    .choice-grid{grid-template-columns:repeat(4,1fr);gap:14px}
+    .choice-grid.codes{grid-template-columns:repeat(3,1fr)}
+    .choice{min-height:150px;padding:22px 20px}
+  }
+
+  /* ④ 결과 */
+  .result-head{margin-bottom:20px}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .palette{background:var(--bg-soft);border-radius:8px;padding:18px 20px;display:grid;gap:14px;margin-bottom:14px}
+  .pal-row{display:grid;gap:8px}
+  .pal-row h3{font-size:13px;font-weight:700;color:var(--text-sub)}
+  .swatches{display:flex;flex-wrap:wrap;gap:6px 14px;list-style:none;font-size:14px}
+  .swatches li{display:flex;align-items:center;gap:6px}
+  .dot{flex:none;width:14px;height:14px;border-radius:3px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+  .pal-note{font-size:15px;color:var(--text-sub)}
+  @media (min-width:768px){.palette{grid-template-columns:1fr 1.4fr 1.2fr;gap:24px}}
+  .guide{font-size:15px;color:var(--text-sub);margin-bottom:22px}
+  .guide b{color:var(--text)}
+
+  .looks{list-style:none;display:grid;gap:14px}
+  .look{border:1px solid var(--line);border-radius:8px;overflow:hidden;display:grid;grid-template-columns:132px 1fr;background:var(--bg)}
+  .look-img{background:var(--bg-img);position:relative;display:flex;align-items:flex-end;justify-content:center;padding:10px 4px 0}
+  .look-img svg{display:block;width:100%;height:auto;max-height:260px}
+  .look-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .look-img .lv{position:absolute;left:8px;top:8px;font-size:12px;font-weight:700;background:rgba(255,255,255,.9);padding:2px 8px;border-radius:999px}
+  .look-body{padding:14px 14px 16px;display:flex;flex-direction:column;min-width:0}
+  .stage{font-size:15px;font-weight:700}
+  .items{list-style:none;font-size:14px;display:grid;gap:3px;margin:8px 0 10px}
+  .items li{display:flex;align-items:center;gap:8px}
+  .items .dot{width:12px;height:12px}
+  .point{display:flex;flex-wrap:wrap;align-items:center;column-gap:6px;row-gap:2px;font-size:13px;color:var(--text-sub)}
+  .point strong{color:var(--text);font-weight:600;white-space:nowrap}
+  .desc{font-size:15px;color:var(--text-sub);line-height:1.55;margin:8px 0 12px;flex:1}
+  .meter-label{font-size:12px;color:var(--text-sub);margin-bottom:5px;display:flex;justify-content:space-between}
+  .meter{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+  .meter i{height:6px;border-radius:1px;background:var(--line)}
+  .meter i.on{background:var(--text)}
+  @media (min-width:700px){.looks{grid-template-columns:repeat(2,1fr)}}
+  @media (min-width:1024px){
+    .looks{grid-template-columns:repeat(5,1fr)}
+    .look{grid-template-columns:1fr;grid-template-rows:auto 1fr}
+    .look-img{padding-top:34px}
+  }
+  .next-box{margin-top:36px;padding:28px 20px;border-radius:8px;background:var(--bg-soft);text-align:center}
+  .next-box p{font-size:17px;font-weight:600;margin-bottom:16px}
+  .next-box .btn{width:100%;max-width:340px}
+  .sub-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px}
+
+  /* ⑤ 소식 받기 */
+  .signup{text-align:center;padding:64px 0 88px}
+  .signup .step-title{margin-bottom:12px}
+  .signup .step-sub{margin-bottom:20px}
+  .signup .picked{margin-bottom:28px}
+  .signup .btn{width:100%;max-width:340px}
+  .form-note{font-size:14px;color:var(--text-sub);margin-top:14px;min-height:1.6em}
+  .signup .sub-actions{margin-top:28px}
+
+  footer{border-top:1px solid var(--line);padding:28px 0 36px;font-size:14px;color:var(--text-sub)}
+  footer .brand{color:var(--text);display:block;margin-bottom:4px}
+  footer .disclaimer{margin-top:8px;font-size:13px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--text);color:#fff;font-size:14px;padding:10px 18px;border-radius:999px;opacity:0;transition:.25s;pointer-events:none;z-index:10}
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="wrap topbar"><a class="brand" href="#start">출근컬러</a></div>
+</header>
+
+<nav class="stepper" id="stepper" aria-label="진행 단계" hidden>
+  <div class="wrap">
+    <ol>
+      <li><span class="n">1</span>시작</li>
+      <li><span class="n">2</span>퍼스널컬러</li>
+      <li><span class="n">3</span>복장 규정</li>
+      <li><span class="n">4</span>룩북</li>
+      <li><span class="n">5</span>소식 받기</li>
+    </ol>
+  </div>
+</nav>
+
+<main>
+  <!-- ① 첫 화면 -->
+  <section class="step hero" data-step="1" aria-labelledby="t1">
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">Office Color Lookbook</p>
+        <h1 id="t1" tabindex="-1">진단받은 내 컬러,<br>이제 출근복으로 입어 보세요.</h1>
+        <p class="sub">복장 규정 안에서 내 컬러를 얼마나, 어디에 쓸지 정해 주는 출근 코디 룩북.</p>
+        <a class="btn" href="#color">내 룩북 찾기
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </a>
+        <p class="note">퍼스널컬러를 이미 알고 있는 분을 위한 서비스예요.</p>
+      </div>
+      <div class="hero-looks" id="hero-looks"></div>
+    </div>
+  </section>
+
+  <!-- ② 퍼스널컬러 선택 -->
+  <section class="step" data-step="2" aria-labelledby="t2" hidden>
+    <div class="wrap">
+      <a class="back" href="#start">← 처음으로</a>
+      <p class="eyebrow">Step 2</p>
+      <h2 class="step-title" id="t2" tabindex="-1">내 퍼스널컬러를 골라 주세요</h2>
+      <p class="step-sub">진단받은 결과를 누르면 다음 단계로 넘어가요.</p>
+      <div class="choice-grid" id="season-choices"></div>
+    </div>
+  </section>
+
+  <!-- ③ 복장 규정 선택 -->
+  <section class="step" data-step="3" aria-labelledby="t3" hidden>
+    <div class="wrap">
+      <a class="back" href="#color">← 퍼스널컬러 다시 고르기</a>
+      <p class="eyebrow">Step 3</p>
+      <h2 class="step-title" id="t3" tabindex="-1">회사 복장 규정은 어떤가요?</h2>
+      <p class="step-sub">규정에 따라 컬러를 쓰는 범위가 달라져요.</p>
+      <p class="picked" id="picked-season"></p>
+      <div class="choice-grid codes" id="code-choices"></div>
+    </div>
+  </section>
+
+  <!-- ④ 결과 룩북 -->
+  <section class="step" data-step="4" aria-labelledby="t4" hidden>
+    <div class="wrap">
+      <a class="back" href="#dresscode">← 복장 규정 다시 고르기</a>
+      <div class="result-head">
+        <p class="eyebrow">Your Lookbook</p>
+        <h2 class="step-title" id="t4" tabindex="-1"></h2>
+      </div>
+      <div class="palette" id="palette"></div>
+      <p class="guide" id="guide"></p>
+      <ul class="looks" id="looks"></ul>
+      <div class="next-box">
+        <p>이 조합의 새 코디가 나오면 알려 드릴까요?</p>
+        <a class="btn" href="#signup">룩북 소식 받기</a>
+        <div class="sub-actions">
+          <a class="btn-line" href="#color">다른 조합 보기</a>
+          <button type="button" class="btn-line" id="copy-btn">이 룩북 링크 복사</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ⑤ 소식 받기 -->
+  <section class="step signup" data-step="5" aria-labelledby="t5" hidden>
+    <div class="wrap">
+      <p class="eyebrow">Step 5</p>
+      <h2 class="step-title" id="t5" tabindex="-1">내 조합의 새 코디가 나오면<br>가장 먼저 알려 드릴게요</h2>
+      <p class="step-sub">신청이 많은 조합부터 코디를 더 늘려요.</p>
+      <p class="picked" id="picked-combo" hidden></p><br>
+      <a class="btn" data-form-link href="#">룩북 소식 받기
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+      </a>
+      <p class="form-note" id="form-note" aria-live="polite"></p>
+      <div class="sub-actions">
+        <a class="btn-line" id="back-to-look" href="#color">룩북 다시 보기</a>
+        <a class="btn-line" href="#start">처음으로</a>
+      </div>
+    </div>
+  </section>
+  <noscript><p class="wrap" style="padding:24px 20px">룩북을 보려면 브라우저에서 자바스크립트를 켜 주세요.</p></noscript>
+</main>
+
+<footer>
+  <div class="wrap">
+    <strong class="brand">출근컬러</strong>
+    <p>문의 이메일 준비 중</p>
+    <p class="disclaimer">코디는 일반적인 퍼스널컬러 스타일링 원칙을 바탕으로 만든 예시이며, 스타일룩 이미지는 옷 색과 형태를 보여 주는 일러스트예요.</p>
+  </div>
+</footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+/* ───────── 색 이름 → 색상값 ───────── */
+const COLORS = {
+  "화이트":"#FAFAF8","오프화이트":"#F3F0E8","퓨어 화이트":"#FFFFFF","아이보리":"#F4EEDC","크림":"#EFE3C8",
+  "라이트 그레이":"#D3D4D6","그레이":"#9A9CA1","쿨 그레이":"#8C9098","차콜":"#3F4146","블랙":"#1E1E20",
+  "네이비":"#2E3A59","딥 네이비":"#1F2740","브라이트 네이비":"#33487A",
+  "웜 베이지":"#D8C3A5","카멜":"#B98A5A","라이트 브라운":"#A67B5B","브라운":"#6E4B35","다크 브라운":"#4A3326","카키":"#7A7454",
+  "연청":"#8FA9C4","중청":"#5B7596","진청":"#34466A",
+  "코랄":"#EE8467","피치":"#F5B596","살구":"#F2A477","라이트 옐로":"#F3D66B","애플 그린":"#9CCB6B","터콰이즈":"#4FB9B0",
+  "라벤더":"#B7A8D6","스카이블루":"#A8CAE8","로즈핑크":"#D68FA5","더스티 블루":"#7E9AB4","소프트 민트":"#A9D6C8","라일락":"#C7A9CF","파우더 핑크":"#E8C3CC",
+  "테라코타":"#C0663F","머스터드":"#C99A2E","올리브 그린":"#707A3A","브릭 레드":"#9E3F32","딥 틸":"#2F6468","러스트":"#A8522E",
+  "로열 블루":"#2F4FC0","와인":"#6E1F3A","푸시아":"#C2327A","에메랄드":"#11806A","아이시 블루":"#CFE3F2","쿨 레드":"#C21F3A"
+};
+
+const LEVELS = ["소품","이너","하의","상의","전체"];
+
+const SEASONS = [
+  { key:"spring", name:"봄 웜톤",
+    base:["아이보리","크림","웜 베이지","카멜","브라이트 네이비"],
+    point:["코랄","피치","살구","라이트 옐로","애플 그린","터콰이즈"],
+    note:"밝고 따뜻한 색이 잘 받아요. 블랙·차콜처럼 무겁고 차가운 색은 얼굴에서 먼 곳에 두세요." },
+  { key:"summer", name:"여름 쿨톤",
+    base:["화이트","라이트 그레이","그레이","차콜","네이비"],
+    point:["라벤더","스카이블루","로즈핑크","더스티 블루","소프트 민트","파우더 핑크"],
+    note:"부드럽고 차가운 색이 잘 받아요. 머스터드·오렌지처럼 진하고 따뜻한 색은 얼굴에서 먼 곳에 두세요." },
+  { key:"autumn", name:"가을 웜톤",
+    base:["크림","웜 베이지","카멜","카키","다크 브라운"],
+    point:["테라코타","머스터드","올리브 그린","브릭 레드","딥 틸","러스트"],
+    note:"깊고 차분한 따뜻한 색이 잘 받아요. 아이시 블루처럼 밝고 차가운 색은 얼굴에서 먼 곳에 두세요." },
+  { key:"winter", name:"겨울 쿨톤",
+    base:["퓨어 화이트","쿨 그레이","차콜","딥 네이비","블랙"],
+    point:["로열 블루","와인","푸시아","에메랄드","아이시 블루","쿨 레드"],
+    note:"선명하고 대비가 강한 색이 잘 받아요. 카멜·머스터드처럼 탁하고 따뜻한 색은 얼굴에서 먼 곳에 두세요." }
+];
+
+const CODES = [
+  { key:"free", name:"자유", tip:"티셔츠·데님처럼 편한 옷이 기준이라, 컬러를 넓게 써도 부담이 적어요." },
+  { key:"business", name:"비즈니스 캐주얼", tip:"셔츠·니트·슬랙스가 기준이라, 컬러는 소품과 이너부터 늘려 가는 게 안전해요." },
+  { key:"formal", name:"정장", tip:"수트가 기준이라, 셋업은 짙고 차분한 색으로 두고 밝은 컬러는 이너와 소품에 써요." }
+];
+
+/* 코디 데이터: i = [색 이름, 옷, 위치(acc 스카프 / bag 가방 / outer 겉옷 / inner 이너 / top 상의 / bottom 하의 / dress 원피스)], p = 포인트 컬러 */
+const LOOKS = {
+  "spring-free":[
+    {i:[["아이보리","니트","top"],["연청","데님","bottom"],["코랄","스카프","acc"]], p:"코랄", d:"스카프 하나로 얼굴에 따뜻한 생기를 더해요."},
+    {i:[["카멜","카디건","outer"],["라이트 옐로","티셔츠","inner"],["중청","데님","bottom"]], p:"라이트 옐로", d:"카디건 사이로 보이는 옐로가 가볍고 밝은 인상을 만들어요."},
+    {i:[["오프화이트","티셔츠","top"],["애플 그린","스커트","bottom"]], p:"애플 그린", d:"상의를 밝게 비워 두면 그린 하의도 부담 없어요."},
+    {i:[["피치","니트","top"],["웜 베이지","와이드 팬츠","bottom"]], p:"피치", d:"같은 따뜻한 계열 하의로 이어 부드럽게 정리해요."},
+    {i:[["코랄","원피스","dress"],["아이보리","카디건","outer"]], p:"코랄", d:"밝은 카디건을 걸치면 코랄 면적이 줄어 차분해져요."}
+  ],
+  "spring-business":[
+    {i:[["아이보리","블라우스","top"],["카멜","슬랙스","bottom"],["살구","스카프","acc"]], p:"살구", d:"뉴트럴 코디에 살구 스카프로 얼굴빛만 밝혀요."},
+    {i:[["웜 베이지","재킷","outer"],["코랄","블라우스","inner"],["아이보리","슬랙스","bottom"]], p:"코랄", d:"재킷 앞섶 사이로만 코랄이 보여 과하지 않아요."},
+    {i:[["크림","셔츠","top"],["터콰이즈","스커트","bottom"]], p:"터콰이즈", d:"셔츠를 크림색으로 두면 선명한 하의가 튀지 않아요."},
+    {i:[["피치","니트","top"],["라이트 브라운","슬랙스","bottom"]], p:"피치", d:"브라운 하의가 밝은 상의를 단정하게 받쳐 줘요."},
+    {i:[["살구","원피스","dress"],["카멜","재킷","outer"]], p:"살구", d:"카멜 재킷을 걸쳐 원피스를 출근용으로 정리해요."}
+  ],
+  "spring-formal":[
+    {i:[["브라이트 네이비","재킷","outer"],["아이보리","블라우스","inner"],["브라이트 네이비","스커트","bottom"],["코랄","가방","bag"]], p:"코랄", d:"수트는 규정대로 두고 가방으로만 컬러를 들여요."},
+    {i:[["웜 베이지","재킷","outer"],["피치","블라우스","inner"],["웜 베이지","슬랙스","bottom"]], p:"피치", d:"셋업 안쪽 블라우스만 바꿔도 얼굴이 한결 밝아져요."},
+    {i:[["브라이트 네이비","재킷","outer"],["아이보리","블라우스","inner"],["피치","스커트","bottom"]], p:"피치", d:"짙은 재킷이 밝은 하의를 단정하게 잡아 줘요."},
+    {i:[["피치","재킷","outer"],["아이보리","블라우스","inner"],["웜 베이지","슬랙스","bottom"]], p:"피치", d:"재킷에만 컬러를 쓰고 이너와 하의는 밝은 뉴트럴로 맞춰요."},
+    {i:[["살구","재킷","outer"],["아이보리","블라우스","inner"],["살구","슬랙스","bottom"]], p:"살구", d:"컬러 셋업은 이너를 아이보리로 두면 부드럽게 보여요."}
+  ],
+  "summer-free":[
+    {i:[["라이트 그레이","스웨트셔츠","top"],["연청","데님","bottom"],["파우더 핑크","스카프","acc"]], p:"파우더 핑크", d:"편한 차림에도 얼굴 가까이 핑크를 두면 인상이 부드러워져요."},
+    {i:[["그레이","카디건","outer"],["소프트 민트","티셔츠","inner"],["중청","데님","bottom"]], p:"소프트 민트", d:"카디건 사이로 민트가 살짝 보여 산뜻해요."},
+    {i:[["화이트","니트","top"],["더스티 블루","와이드 팬츠","bottom"]], p:"더스티 블루", d:"흰 상의에 블루 하의로 시원하고 가벼운 조합이에요."},
+    {i:[["라일락","니트","top"],["연청","데님","bottom"]], p:"라일락", d:"데님과 같은 차가운 계열이라 자연스럽게 이어져요."},
+    {i:[["스카이블루","셔츠 원피스","dress"],["라이트 그레이","카디건","outer"]], p:"스카이블루", d:"밝은 회색 카디건이 블루 면적을 줄여 줘요."}
+  ],
+  "summer-business":[
+    {i:[["그레이","니트","top"],["차콜","슬랙스","bottom"],["라벤더","스카프","acc"]], p:"라벤더", d:"얼굴 가까이 작은 면적만 컬러로 안색을 살려요."},
+    {i:[["네이비","재킷","outer"],["스카이블루","셔츠","inner"],["그레이","슬랙스","bottom"]], p:"스카이블루", d:"재킷 안쪽으로만 보여 차분한 인상을 지켜요."},
+    {i:[["화이트","블라우스","top"],["로즈핑크","슬랙스","bottom"]], p:"로즈핑크", d:"상의를 흰색으로 두어 균형을 맞춰요."},
+    {i:[["라벤더","니트","top"],["라이트 그레이","스커트","bottom"]], p:"라벤더", d:"밝은 무채색 하의로 부드럽게 연결해요."},
+    {i:[["더스티 블루","원피스","dress"],["네이비","카디건","outer"]], p:"더스티 블루", d:"카디건으로 컬러 면적을 조절할 수 있어요."}
+  ],
+  "summer-formal":[
+    {i:[["차콜","재킷","outer"],["화이트","블라우스","inner"],["차콜","슬랙스","bottom"],["라벤더","가방","bag"]], p:"라벤더", d:"작은 소품이라 격식 있는 자리에도 무리가 없어요."},
+    {i:[["네이비","재킷","outer"],["파우더 핑크","블라우스","inner"],["네이비","슬랙스","bottom"]], p:"파우더 핑크", d:"짙은 셋업 안에서 핑크가 얼굴을 환하게 받쳐 줘요."},
+    {i:[["그레이","재킷","outer"],["화이트","블라우스","inner"],["더스티 블루","스커트","bottom"]], p:"더스티 블루", d:"재킷과 이너를 무채색으로 맞춰 하의 컬러를 정돈해요."},
+    {i:[["라벤더","재킷","outer"],["화이트","블라우스","inner"],["그레이","슬랙스","bottom"]], p:"라벤더", d:"재킷에만 컬러를 쓰고 나머지는 회색 계열로 정리해요."},
+    {i:[["더스티 블루","재킷","outer"],["화이트","블라우스","inner"],["더스티 블루","슬랙스","bottom"]], p:"더스티 블루", d:"탁한 블루 셋업은 차분해서 정장 규정 안에서도 부담이 적어요."}
+  ],
+  "autumn-free":[
+    {i:[["크림","니트","top"],["진청","데님","bottom"],["머스터드","스카프","acc"]], p:"머스터드", d:"스카프로 따뜻한 깊이를 얼굴 가까이에 더해요."},
+    {i:[["카키","셔츠 재킷","outer"],["테라코타","티셔츠","inner"],["웜 베이지","치노 팬츠","bottom"]], p:"테라코타", d:"셔츠 재킷 안쪽 테라코타가 캐주얼에 온기를 줘요."},
+    {i:[["크림","스웨트셔츠","top"],["올리브 그린","스커트","bottom"]], p:"올리브 그린", d:"밝은 크림 상의가 짙은 올리브를 가볍게 만들어요."},
+    {i:[["러스트","니트","top"],["진청","데님","bottom"]], p:"러스트", d:"짙은 데님이 선명한 러스트를 차분하게 잡아 줘요."},
+    {i:[["브릭 레드","원피스","dress"],["브라운","카디건","outer"]], p:"브릭 레드", d:"브라운 카디건으로 레드 면적과 무게감을 함께 조절해요."}
+  ],
+  "autumn-business":[
+    {i:[["웜 베이지","니트","top"],["브라운","슬랙스","bottom"],["러스트","스카프","acc"]], p:"러스트", d:"뉴트럴 코디에 러스트 스카프 하나로 얼굴빛을 살려요."},
+    {i:[["카멜","재킷","outer"],["딥 틸","블라우스","inner"],["크림","슬랙스","bottom"]], p:"딥 틸", d:"따뜻한 카멜 사이로 보이는 딥 틸이 또렷해 보여요."},
+    {i:[["크림","블라우스","top"],["테라코타","스커트","bottom"]], p:"테라코타", d:"상의를 크림으로 두면 테라코타 하의가 단정해 보여요."},
+    {i:[["머스터드","니트","top"],["다크 브라운","슬랙스","bottom"]], p:"머스터드", d:"짙은 브라운 하의가 밝은 머스터드를 안정적으로 받쳐요."},
+    {i:[["올리브 그린","원피스","dress"],["카멜","재킷","outer"]], p:"올리브 그린", d:"카멜 재킷을 걸쳐 원피스를 출근용으로 정리해요."}
+  ],
+  "autumn-formal":[
+    {i:[["다크 브라운","재킷","outer"],["크림","블라우스","inner"],["다크 브라운","슬랙스","bottom"],["테라코타","가방","bag"]], p:"테라코타", d:"무게감 있는 수트에 가방으로만 온기를 더해요."},
+    {i:[["카멜","재킷","outer"],["브릭 레드","블라우스","inner"],["카멜","슬랙스","bottom"]], p:"브릭 레드", d:"셋업 안쪽에만 레드를 둬서 격식을 지켜요."},
+    {i:[["다크 브라운","재킷","outer"],["크림","블라우스","inner"],["딥 틸","스커트","bottom"]], p:"딥 틸", d:"짙은 재킷과 톤이 비슷해 하의 컬러가 튀지 않아요."},
+    {i:[["올리브 그린","재킷","outer"],["크림","블라우스","inner"],["브라운","슬랙스","bottom"]], p:"올리브 그린", d:"재킷에 컬러를 쓰고 하의는 브라운으로 무게를 맞춰요."},
+    {i:[["딥 틸","재킷","outer"],["크림","블라우스","inner"],["딥 틸","슬랙스","bottom"]], p:"딥 틸", d:"짙고 탁한 틸 셋업은 정장 자리에서도 차분해 보여요."}
+  ],
+  "winter-free":[
+    {i:[["블랙","터틀넥","top"],["진청","데님","bottom"],["쿨 레드","스카프","acc"]], p:"쿨 레드", d:"선명한 레드를 얼굴 가까이 작게 둬서 또렷한 인상을 줘요."},
+    {i:[["차콜","카디건","outer"],["아이시 블루","티셔츠","inner"],["블랙","데님","bottom"]], p:"아이시 블루", d:"어두운 카디건 사이로 아이시 블루가 깨끗하게 보여요."},
+    {i:[["퓨어 화이트","티셔츠","top"],["로열 블루","와이드 팬츠","bottom"]], p:"로열 블루", d:"흰색과 선명한 블루의 대비가 겨울 쿨톤과 잘 맞아요."},
+    {i:[["푸시아","니트","top"],["블랙","스커트","bottom"]], p:"푸시아", d:"블랙 하의가 강한 푸시아를 단단하게 잡아 줘요."},
+    {i:[["에메랄드","원피스","dress"],["블랙","카디건","outer"]], p:"에메랄드", d:"블랙 카디건으로 컬러 면적을 줄이면 출근용으로 차분해져요."}
+  ],
+  "winter-business":[
+    {i:[["퓨어 화이트","셔츠","top"],["블랙","슬랙스","bottom"],["로열 블루","스카프","acc"]], p:"로열 블루", d:"흑백 코디에 블루 스카프로 선명함만 더해요."},
+    {i:[["차콜","재킷","outer"],["와인","블라우스","inner"],["쿨 그레이","슬랙스","bottom"]], p:"와인", d:"재킷 안쪽 와인이 차분하면서 얼굴에 선명함을 줘요."},
+    {i:[["퓨어 화이트","블라우스","top"],["에메랄드","스커트","bottom"]], p:"에메랄드", d:"상의를 흰색으로 둬서 선명한 하의를 깔끔하게 정리해요."},
+    {i:[["로열 블루","니트","top"],["차콜","슬랙스","bottom"]], p:"로열 블루", d:"짙은 차콜 하의가 선명한 블루를 안정적으로 받쳐요."},
+    {i:[["와인","원피스","dress"],["차콜","재킷","outer"]], p:"와인", d:"차콜 재킷을 걸치면 와인 원피스도 단정해 보여요."}
+  ],
+  "winter-formal":[
+    {i:[["블랙","재킷","outer"],["퓨어 화이트","셔츠","inner"],["블랙","슬랙스","bottom"],["쿨 레드","가방","bag"]], p:"쿨 레드", d:"기본 흑백 수트에 가방으로만 레드를 들여요."},
+    {i:[["딥 네이비","재킷","outer"],["아이시 블루","블라우스","inner"],["딥 네이비","슬랙스","bottom"]], p:"아이시 블루", d:"짙은 네이비 셋업 안에 아이시 블루로 얼굴을 밝혀요."},
+    {i:[["차콜","재킷","outer"],["퓨어 화이트","블라우스","inner"],["와인","스커트","bottom"]], p:"와인", d:"짙은 재킷과 흰 이너가 와인 하의를 단정하게 받쳐요."},
+    {i:[["로열 블루","재킷","outer"],["퓨어 화이트","블라우스","inner"],["블랙","슬랙스","bottom"]], p:"로열 블루", d:"블랙 하의로 무게를 잡아 선명한 재킷도 격식 있게 보여요."},
+    {i:[["와인","재킷","outer"],["퓨어 화이트","블라우스","inner"],["와인","슬랙스","bottom"]], p:"와인", d:"짙은 와인 셋업은 컬러가 있어도 무게감이 있어 차분해요."}
+  ]
+};
+
+const TRAITS = { spring:"밝고 따뜻한 색이 잘 받아요", summer:"부드럽고 차가운 색이 잘 받아요", autumn:"깊고 차분한 따뜻한 색이 잘 받아요", winter:"선명하고 대비가 강한 색이 잘 받아요" };
+const CODE_DESC = { free:"티셔츠·데님도 괜찮은 회사", business:"셔츠·니트·슬랙스가 기본인 회사", formal:"수트·재킷 착용이 기본인 회사" };
+
+/* ───────── 스타일룩 일러스트 (SVG) ───────── */
+const SKIN = "#E6CFBC", HAIR = "#3A302C", SHOE = "#34343A";
+const ST = 'stroke="rgba(0,0,0,.2)" stroke-width="1.2" stroke-linejoin="round"';
+const hex = n => COLORS[n] || "#ccc";
+const shape = (d, c, extra = "") => `<path d="${d}" fill="${c}" ${ST} ${extra}/>`;
+const SH = {
+  armL:"M66 98 L50 228 L62 231 L76 120 Z", armR:"M134 98 L150 228 L138 231 L124 120 Z",
+  legsSkirt:"M82 296 L97 296 L95 368 L85 368 Z M103 296 L118 296 L115 368 L105 368 Z",
+  legsDress:"M84 316 L97 316 L95 368 L86 368 Z M103 316 L116 316 L114 368 L105 368 Z",
+  body:"M76 86 L90 81 Q100 93 110 81 L124 86 L132 104 L126 206 L74 206 L68 104 Z",
+  sleeveL:"M76 86 L62 100 L49 226 L64 229 L75 122 Z", sleeveR:"M124 86 L138 100 L151 226 L136 229 L125 122 Z",
+  shortL:"M76 86 L62 100 L57 136 L72 139 L75 122 Z", shortR:"M124 86 L138 100 L143 136 L128 139 L125 122 Z",
+  slacks:"M75 200 L125 200 L129 370 L106 370 L100 254 L94 370 L71 370 Z",
+  wide:"M75 200 L125 200 L139 370 L104 370 L100 258 L96 370 L61 370 Z",
+  skirt:"M75 200 L125 200 L134 302 L66 302 Z",
+  dress:"M76 86 L90 81 Q100 93 110 81 L124 86 L132 104 L124 196 L137 320 L63 320 L76 196 L68 104 Z",
+  jacketL:"M76 86 L90 81 L97 150 L97 232 L69 232 L68 104 Z", jacketR:"M124 86 L110 81 L103 150 L103 232 L131 232 L132 104 Z",
+  lapelL:"M90 81 L83 112 L97 150 Z", lapelR:"M110 81 L117 112 L103 150 Z",
+  cardiL:"M76 86 L90 81 L98 168 L98 222 L70 222 L68 104 Z", cardiR:"M124 86 L110 81 L102 168 L102 222 L130 222 L132 104 Z",
+  collarL:"M90 81 L100 93 L91 100 Z", collarR:"M110 81 L100 93 L109 100 Z",
+  turtle:"M90 64 L110 64 L111 88 L89 88 Z",
+  scarf:"M86 78 Q100 98 114 78 L117 91 Q100 112 83 91 Z", scarfTail:"M103 100 L112 98 L117 148 L104 146 Z",
+  hair:"M81 52 Q78 20 100 20 Q123 20 119 52 L121 80 L110 78 L113 52 Q106 36 88 43 L90 78 L79 80 Z"
+};
+function typeOf(g){
+  if (/원피스/.test(g)) return "dress";
+  if (/재킷/.test(g)) return /셔츠/.test(g) ? "shirtjacket" : "jacket";
+  if (/카디건/.test(g)) return "cardigan";
+  if (/스커트/.test(g)) return "skirt";
+  if (/와이드|치노/.test(g)) return "wide";
+  if (/데님/.test(g)) return "denim";
+  if (/슬랙스/.test(g)) return "slacks";
+  if (/티셔츠/.test(g)) return "tee";
+  if (/스웨트/.test(g)) return "sweat";
+  if (/터틀넥/.test(g)) return "turtle";
+  if (/블라우스|셔츠/.test(g)) return "shirt";
+  if (/가방/.test(g)) return "bag";
+  if (/스카프/.test(g)) return "scarf";
+  return "knit";
+}
+function lookSVG(items, label){
+  const get = p => items.find(x => x[2] === p);
+  const top = get("inner") || get("top"), bottom = get("bottom"), dress = get("dress"), outer = get("outer"), acc = get("acc"), bag = get("bag");
+  const bt = bottom ? typeOf(bottom[1]) : null;
+  let s = `<ellipse cx="100" cy="378" rx="54" ry="6" fill="rgba(0,0,0,.07)"/>`;
+  // 다리·신발
+  if (dress) s += `<path d="${SH.legsDress}" fill="${SKIN}"/>`;
+  else if (bt === "skirt") s += `<path d="${SH.legsSkirt}" fill="${SKIN}"/>`;
+  s += `<ellipse cx="84" cy="372" rx="12" ry="5" fill="${SHOE}"/><ellipse cx="116" cy="372" rx="12" ry="5" fill="${SHOE}"/>`;
+  // 팔·목·얼굴
+  s += `<path d="${SH.armL} ${SH.armR}" fill="${SKIN}"/>`;
+  s += `<rect x="93" y="60" width="14" height="28" fill="${SKIN}"/><ellipse cx="100" cy="46" rx="17" ry="20" fill="${SKIN}"/><path d="${SH.hair}" fill="${HAIR}"/>`;
+  // 하의
+  if (bottom) {
+    const c = hex(bottom[0]);
+    if (bt === "skirt") s += shape(SH.skirt, c);
+    else if (bt === "wide") s += shape(SH.wide, c);
+    else s += shape(SH.slacks, c);
+    if (bt === "denim") s += `<path d="M100 202 L100 250 M80 214 Q88 222 96 214 M120 214 Q112 222 104 214" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="1.4"/>`;
+    if (bt === "slacks") s += `<path d="M84 212 L82 366 M116 212 L118 366" fill="none" stroke="rgba(0,0,0,.08)" stroke-width="1"/>`;
+  }
+  // 상의·이너
+  if (top && !dress) {
+    const c = hex(top[0]), tt = typeOf(top[1]);
+    s += shape(SH.body, c);
+    s += tt === "tee" ? shape(SH.shortL, c) + shape(SH.shortR, c) : shape(SH.sleeveL, c) + shape(SH.sleeveR, c);
+    if (tt === "shirt") s += shape(SH.collarL, c) + shape(SH.collarL, "rgba(0,0,0,.06)") + shape(SH.collarR, c) + shape(SH.collarR, "rgba(0,0,0,.06)");
+    if (tt === "turtle") s += shape(SH.turtle, c);
+    if (tt === "knit" || tt === "sweat") s += `<path d="M90 82 Q100 95 110 82" fill="none" stroke="rgba(0,0,0,.14)" stroke-width="3"/><path d="M74 198 L126 198" stroke="rgba(0,0,0,.1)" stroke-width="4"/>`;
+  }
+  // 원피스
+  if (dress) {
+    const c = hex(dress[0]);
+    s += shape(SH.dress, c) + shape(SH.sleeveL, c) + shape(SH.sleeveR, c);
+    if (/셔츠/.test(dress[1])) s += shape(SH.collarL, c) + shape(SH.collarR, c) + `<path d="M100 94 L100 196" stroke="rgba(0,0,0,.15)" stroke-width="1"/>`;
+    s += `<path d="M76 196 L124 196" stroke="rgba(0,0,0,.12)" stroke-width="3"/>`;
+  }
+  // 겉옷
+  if (outer) {
+    const c = hex(outer[0]), ot = typeOf(outer[1]);
+    s += shape(SH.sleeveL, c) + shape(SH.sleeveR, c);
+    if (ot === "cardigan") {
+      s += shape(SH.cardiL, c) + shape(SH.cardiR, c);
+      s += `<circle cx="95" cy="178" r="1.8" fill="rgba(0,0,0,.25)"/><circle cx="95" cy="198" r="1.8" fill="rgba(0,0,0,.25)"/>`;
+    } else {
+      s += shape(SH.jacketL, c) + shape(SH.jacketR, c);
+      s += shape(SH.lapelL, "rgba(0,0,0,.12)") + shape(SH.lapelR, "rgba(0,0,0,.12)");
+      if (ot === "shirtjacket") s += `<path d="M77 116 h13 v14 h-13 Z M110 116 h13 v14 h-13 Z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="1.2"/>`;
+      else s += `<path d="M73 190 h16 M111 190 h16" stroke="rgba(0,0,0,.22)" stroke-width="1.4"/>`;
+    }
+  }
+  // 스카프
+  if (acc) { const c = hex(acc[0]); s += shape(SH.scarf, c) + shape(SH.scarfTail, c); }
+  // 가방 + 손
+  if (bag) { const c = hex(bag[0]); s += `<path d="M140 240 Q151 218 162 240" fill="none" stroke="${c}" stroke-width="3.5"/><rect x="134" y="238" width="34" height="28" rx="4" fill="${c}" ${ST}/>`; }
+  s += `<circle cx="56" cy="236" r="6" fill="${SKIN}"/><circle cx="144" cy="236" r="6" fill="${SKIN}"/>`;
+  return `<svg viewBox="0 0 200 386" role="img" aria-label="${label}">${s}</svg>`;
+}
+
+/* ───────── 화면 ───────── */
+const $ = id => document.getElementById(id);
+const dot = n => `<i class="dot" style="background:${hex(n)}"></i>`;
+const state = { season:null, code:null };
+const seasonOf = k => SEASONS.find(x => x.key === k);
+const codeOf = k => CODES.find(x => x.key === k);
+
+function buildStatic(){
+  // 첫 화면 예시 스타일룩 3개
+  const samples = [["summer","business",1,"여름 쿨톤 · 1단계"],["spring","business",4,"봄 웜톤 · 4단계"],["winter","formal",2,"겨울 쿨톤 · 2단계"]];
+  $("hero-looks").innerHTML = samples.map(([s,c,lv,cap]) => {
+    const l = LOOKS[`${s}-${c}`][lv-1];
+    return `<figure>${lookSVG(l.i, l.i.map(x => x[0]+" "+x[1]).join(", ")+" 스타일룩")}<figcaption>${cap}</figcaption></figure>`;
+  }).join("");
+
+  $("season-choices").innerHTML = SEASONS.map(s => `
+    <button type="button" class="choice" data-season="${s.key}" aria-pressed="false">
+      <span class="name">${s.name}</span>
+      <span class="trait">${TRAITS[s.key]}</span>
+      <span class="sw" aria-hidden="true">${s.point.slice(0,5).map(c => `<i style="background:${hex(c)}"></i>`).join("")}</span>
+    </button>`).join("");
+  $("season-choices").addEventListener("click", e => {
+    const b = e.target.closest(".choice"); if (!b) return;
+    state.season = b.dataset.season; markPressed("season-choices", "season", state.season);
+    setTimeout(() => { location.hash = "dresscode"; }, 160);
+  });
+
+  const icons = {
+    free: [["오프화이트","티셔츠","top"],["중청","데님","bottom"]],
+    business: [["화이트","셔츠","top"],["그레이","슬랙스","bottom"]],
+    formal: [["네이비","재킷","outer"],["화이트","블라우스","inner"],["네이비","슬랙스","bottom"]]
+  };
+  $("code-choices").innerHTML = CODES.map(c => `
+    <button type="button" class="choice" data-code="${c.key}" aria-pressed="false">
+      <span class="code-icon" aria-hidden="true">${lookSVG(icons[c.key], "").replace('viewBox="0 0 200 386"','viewBox="30 14 140 372" aria-hidden="true"').replace(' role="img" aria-label=""','')}</span>
+      <span class="txt"><span class="name">${c.name}</span><span class="trait">${CODE_DESC[c.key]}</span></span>
+      <span class="arrow" aria-hidden="true">›</span>
+    </button>`).join("");
+  $("code-choices").addEventListener("click", e => {
+    const b = e.target.closest(".choice"); if (!b || !state.season) return;
+    state.code = b.dataset.code; markPressed("code-choices", "code", state.code);
+    setTimeout(() => { location.hash = `look-${state.season}-${state.code}`; }, 160);
+  });
+}
+
+function markPressed(id, attr, val){
+  document.querySelectorAll(`#${id} .choice`).forEach(b => b.setAttribute("aria-pressed", String(b.dataset[attr] === val)));
+}
+
+function renderResult(){
+  const s = seasonOf(state.season), c = codeOf(state.code);
+  $("t4").textContent = `${s.name} × ${c.name} 룩북`;
+  $("palette").innerHTML = `
+    <div class="pal-row"><h3>기본으로 쓰기 좋은 색</h3><ul class="swatches">${s.base.map(n => `<li>${dot(n)}${n}</li>`).join("")}</ul></div>
+    <div class="pal-row"><h3>포인트로 쓰기 좋은 색</h3><ul class="swatches">${s.point.map(n => `<li>${dot(n)}${n}</li>`).join("")}</ul></div>
+    <div class="pal-row"><h3>컬러 쓰는 요령</h3><p class="pal-note">${s.note}</p></div>`;
+  $("guide").innerHTML = `<b>${c.name}</b> · ${c.tip} 1단계 소품에서 5단계 전체로 갈수록 컬러 면적이 넓어져요.`;
+  $("looks").innerHTML = LOOKS[`${s.key}-${c.key}`].map((l, idx) => {
+    const lv = idx + 1, names = l.i.map(x => `${x[0]} ${x[1]}`).join(", ");
+    const photo = USE_PHOTOS ? `<img src="${PHOTO_DIR}${s.key}-${c.key}-${lv}.jpg" alt="${names} 코디 사진" loading="lazy" onerror="this.remove()">` : "";
+    return `<li class="look">
+      <div class="look-img">${lookSVG(l.i, names + " 스타일룩")}${photo}<span class="lv">${lv}단계</span></div>
+      <div class="look-body">
+        <p class="stage">${lv}단계 · ${LEVELS[idx]}</p>
+        <ul class="items">${l.i.map(x => `<li>${dot(x[0])}${x[0]} ${x[1]}</li>`).join("")}</ul>
+        <p class="point">${dot(l.p)}포인트 컬러 <strong>${l.p}</strong></p>
+        <p class="desc">${l.d}</p>
+        <div class="meter-label"><span>컬러 사용량</span><span>${lv}/5</span></div>
+        <div class="meter" role="img" aria-label="컬러 사용량 5단계 중 ${lv}단계">${[1,2,3,4,5].map(n => `<i class="${n <= lv ? "on" : ""}"></i>`).join("")}</div>
+      </div></li>`;
+  }).join("");
+}
+
+/* 단계 이동 (주소 끝 #으로 관리 → 뒤로 가기 버튼도 동작) */
+function currentStep(){
+  const h = location.hash.slice(1);
+  if (h.startsWith("look-")) {
+    const [, sk, ck] = h.split("-");
+    if (seasonOf(sk) && codeOf(ck)) { state.season = sk; state.code = ck; return 4; }
+    return 2;
+  }
+  if (h === "color") return 2;
+  if (h === "dresscode") return state.season ? 3 : 2;
+  if (h === "signup") return 5;
+  return 1;
+}
+let first = true;
+function render(){
+  const n = currentStep();
+  document.querySelectorAll(".step").forEach(sec => sec.hidden = Number(sec.dataset.step) !== n);
+  $("stepper").hidden = n === 1;
+  document.querySelectorAll("#stepper li").forEach((li, i) => {
+    li.classList.toggle("done", i + 1 < n);
+    if (i + 1 === n) li.setAttribute("aria-current", "step"); else li.removeAttribute("aria-current");
+  });
+  if (n === 2) markPressed("season-choices", "season", state.season);
+  if (n === 3) {
+    $("picked-season").innerHTML = `선택한 퍼스널컬러 <strong>${seasonOf(state.season).name}</strong> <button type="button" onclick="location.hash='color'">바꾸기</button>`;
+    markPressed("code-choices", "code", state.code);
+  }
+  if (n === 4) renderResult();
+  if (n === 5) {
+    const has = state.season && state.code;
+    $("picked-combo").hidden = !has;
+    if (has) $("picked-combo").innerHTML = `선택한 조합 <strong>${seasonOf(state.season).name} × ${codeOf(state.code).name}</strong>`;
+    $("back-to-look").href = has ? `#look-${state.season}-${state.code}` : "#color";
+    $("back-to-look").textContent = has ? "룩북 다시 보기" : "내 룩북 찾기";
+  }
+  window.scrollTo(0, 0);
+  if (!first) { const t = $(`t${n}`); if (t) t.focus({ preventScroll:true }); }
+  first = false;
+}
+window.addEventListener("hashchange", render);
+
+function toast(msg){ const t = $("toast"); t.textContent = msg; t.classList.add("show"); setTimeout(() => t.classList.remove("show"), 2000); }
+$("copy-btn").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText(location.href); toast("링크를 복사했어요"); }
+  catch (e) { toast("주소창의 링크를 복사해 주세요"); }
+});
+
+/* FORM_URL 연결 */
+document.querySelectorAll("[data-form-link]").forEach(link => {
+  if (FORM_URL && FORM_URL !== "#") {
+    link.href = FORM_URL; link.target = "_blank"; link.rel = "noopener noreferrer";
+    link.setAttribute("aria-label", "룩북 소식 받기 (새 탭에서 신청 양식 열림)");
+  } else {
+    link.addEventListener("click", e => { e.preventDefault(); $("form-note").textContent = "신청 양식을 준비하고 있어요. 곧 열릴 예정이에요."; });
+  }
+});
+
+buildStatic();
+render();
+</script>
+</body>
+</html>
